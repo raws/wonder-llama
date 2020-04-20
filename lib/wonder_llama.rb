@@ -1,5 +1,11 @@
+require 'json'
 require 'net/http'
 
 require 'wonder_llama/client'
+require 'wonder_llama/errors'
+require 'wonder_llama/event'
+require 'wonder_llama/event_queue'
+require 'wonder_llama/heartbeat_event'
 require 'wonder_llama/response'
-require 'wonder_llama/message_response'
+require 'wonder_llama/message'
+require 'wonder_llama/message_event'

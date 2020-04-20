@@ -19,7 +19,16 @@ client.send_message(type: 'stream', to: 'social', topic: 'greetings',
 
 client.send_message(type: 'private', to: 'ari@example.com',
   content: 'thanks for the accidental deployment :robot:')
+
+client.stream_events do |event|
+  if event.is_a?(WonderLlama::MessageEvent)
+    message = event.message
+    puts message.content
+  end
+end
 ```
+
+Check out the `examples` directory for more.
 
 ## Contributing
 

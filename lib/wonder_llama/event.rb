@@ -1,0 +1,31 @@
+module WonderLlama
+  class Event
+    attr_reader :params
+
+    def initialize(params)
+      @params = params.transform_keys(&:to_sym)
+    end
+
+    def [](key)
+      @params[key]
+    end
+
+    def id
+      self[:id]
+    end
+
+    def self.new_of_type_inferred_from(params)
+      klass = case params['type'].downcase
+        when HeartbeatEvent::TYPE then HeartbeatEvent
+        when MessageEvent::TYPE then MessageEvent
+        else self
+        end
+
+      klass.new(params)
+    end
+
+    def type
+      self[:type]
+    end
+  end
+end
