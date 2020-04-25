@@ -186,7 +186,61 @@ describe WonderLlama::Client do
 
   describe '#send_message' do
     context 'when sending a message to a stream' do
-      context 'with a stream ID'
+      context 'with a stream ID' do
+        subject { client.send_message(content: 'Hello world!', to: 789, topic: 'hello') }
+
+        context 'when the request succeeds' do
+          before do
+            response_body = {
+              id: 4,
+              msg: '',
+              result: 'success'
+            }
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello world!', to: 789, topic: 'hello', type: 'stream' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'returns a stream message' do
+            expect(subject).to be_stream
+            expect(subject.content).to eq('Hello world!')
+            expect(subject.id).to eq(4)
+            expect(subject.to).to eq(789)
+            expect(subject.topic).to eq('hello')
+          end
+        end
+
+        context 'when the Zulip server returns an error' do
+          before do
+            response_body = {
+              code: 'STREAM_DOES_NOT_EXIST',
+              msg: 'Stream 789 does not exist',
+              result: 'error',
+              stream: 789
+            }
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello world!', to: 789,
+                topic: 'hello', type: 'stream' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'raises ZulipError' do
+            expect { subject }.to raise_error(WonderLlama::ZulipError,
+              'Stream 789 does not exist')
+          end
+        end
+
+        context 'when the API credentials are invalid' do
+          before do
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              to_return(status: 401)
+          end
+
+          include_examples 'raises AuthorizationError'
+        end
+      end
 
       context 'with a stream name' do
         subject { client.send_message(content: 'Hello world!', to: 'greetings', topic: 'hello') }
@@ -224,7 +278,8 @@ describe WonderLlama::Client do
             }
 
             stub_request(:post, 'https://test.example.com/api/v1/messages').
-              with(body: { content: 'Hello world!', to: 'greetings', topic: 'hello', type: 'stream' }).
+              with(body: { content: 'Hello world!', to: 'greetings',
+                topic: 'hello', type: 'stream' }).
               to_return(body: JSON.generate(response_body))
           end
 
@@ -246,12 +301,73 @@ describe WonderLlama::Client do
     end
 
     context 'when sending a private message' do
-      context 'with a list of user IDs'
+      context 'with a list of user IDs' do
+        subject { client.send_message(content: 'Hello, friends!', to: [123, 456]) }
+
+        before do
+          @json_encoded_to = JSON.generate([123, 456])
+        end
+
+        context 'when the request succeeds' do
+          before do
+            response_body = {
+              id: 3,
+              msg: '',
+              result: 'success'
+            }
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello, friends!', to: @json_encoded_to,
+                topic: nil, type: 'private' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'returns a private message' do
+            expect(subject).to be_private
+            expect(subject.content).to eq('Hello, friends!')
+            expect(subject.id).to eq(3)
+            expect(subject.to).to match_array([123, 456])
+            expect(subject.topic).to be_nil
+          end
+        end
+
+        context 'when the Zulip server returns an error' do
+          before do
+            response_body = {
+              code: 'BAD_REQUEST',
+              msg: 'Invalid user ID 123',
+              result: 'error'
+            }
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello, friends!', to: @json_encoded_to,
+                topic: nil, type: 'private' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'raises ZulipError' do
+            expect { subject }.to raise_error(WonderLlama::ZulipError, 'Invalid user ID 123')
+          end
+        end
+
+        context 'when the API credentials are invalid' do
+          before do
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              to_return(status: 401)
+          end
+
+          include_examples 'raises AuthorizationError'
+        end
+      end
 
       context 'with a list of email addresses' do
         subject do
-          client.send_message(content: 'Hello, friend!',
+          client.send_message(content: 'Hello, friends!',
             to: ['friend1@example.com', 'friend2@example.com'])
+        end
+
+        before do
+          @json_encoded_to = JSON.generate(['friend1@example.com', 'friend2@example.com'])
         end
 
         context 'when the request succeeds' do
@@ -262,26 +378,49 @@ describe WonderLlama::Client do
               result: 'success'
             }
 
-            json_encoded_to = JSON.generate(['friend1@example.com', 'friend2@example.com'])
-
             stub_request(:post, 'https://test.example.com/api/v1/messages').
-              with(body: { content: 'Hello, friend!', to: json_encoded_to,
+              with(body: { content: 'Hello, friends!', to: @json_encoded_to,
                 topic: nil, type: 'private' }).
               to_return(body: JSON.generate(response_body))
           end
 
           it 'returns a private message' do
             expect(subject).to be_private
-            expect(subject.content).to eq('Hello, friend!')
+            expect(subject.content).to eq('Hello, friends!')
             expect(subject.id).to eq(2)
             expect(subject.to).to match_array(['friend1@example.com', 'friend2@example.com'])
             expect(subject.topic).to be_nil
           end
         end
 
-        context 'when the Zulip server returns an error'
+        context 'when the Zulip server returns an error' do
+          before do
+            response_body = {
+              code: 'BAD_REQUEST',
+              msg: 'Invalid email \'friend1@example.com\'',
+              result: 'error'
+            }
 
-        context 'when the API credentials are invalid'
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello, friends!', to: @json_encoded_to,
+                topic: nil, type: 'private' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'raises ZulipError' do
+            expect { subject }.to raise_error(WonderLlama::ZulipError,
+              'Invalid email \'friend1@example.com\'')
+          end
+        end
+
+        context 'when the API credentials are invalid' do
+          before do
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              to_return(status: 401)
+          end
+
+          include_examples 'raises AuthorizationError'
+        end
       end
     end
   end
