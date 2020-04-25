@@ -34,7 +34,16 @@ describe WonderLlama::Message do
 
   describe '#topic' do
     subject { message.topic }
-    it { is_expected.to eq('greetings') }
+
+    context 'when the message params include a topic key' do
+      let(:message) { described_class.new('topic' => 'topic value') }
+      it { is_expected.to eq('topic value') }
+    end
+
+    context 'when the message params include a subject key' do
+      let(:message) { described_class.new('subject' => 'subject value') }
+      it { is_expected.to eq('subject value') }
+    end
   end
 
   describe '#type' do

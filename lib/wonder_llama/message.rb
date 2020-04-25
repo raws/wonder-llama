@@ -21,7 +21,7 @@ module WonderLlama
     end
 
     def topic
-      self[:topic]
+      self[:topic] || self[:subject]
     end
 
     def type
