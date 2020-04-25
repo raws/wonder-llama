@@ -17,6 +17,18 @@ describe WonderLlama::Message do
     }
   end
 
+  describe 'PRIVATE_TYPE' do
+    subject { described_class::PRIVATE_TYPE }
+    it { is_expected.to eq('private') }
+    it { is_expected.to be_frozen }
+  end
+
+  describe 'STREAM_TYPE' do
+    subject { described_class::STREAM_TYPE }
+    it { is_expected.to eq('stream') }
+    it { is_expected.to be_frozen }
+  end
+
   describe '#[]' do
     subject { message[:foo] }
     it { is_expected.to eq('bar') }
@@ -40,6 +52,34 @@ describe WonderLlama::Message do
   describe '#params' do
     subject { message.params }
     it { is_expected.to eq(params.transform_keys(&:to_sym)) }
+  end
+
+  describe '#private?' do
+    subject { message.private? }
+
+    context 'with a private message' do
+      before { params['type'] = described_class::PRIVATE_TYPE }
+      it { is_expected.to eq(true) }
+    end
+
+    context 'with a stream message' do
+      before { params['type'] = described_class::STREAM_TYPE }
+      it { is_expected.to eq(false) }
+    end
+  end
+
+  describe '#stream?' do
+    subject { message.stream? }
+
+    context 'with a stream message' do
+      before { params['type'] = described_class::STREAM_TYPE }
+      it { is_expected.to eq(true) }
+    end
+
+    context 'with a private message' do
+      before { params['type'] = described_class::PRIVATE_TYPE }
+      it { is_expected.to eq(false) }
+    end
   end
 
   describe '#to' do

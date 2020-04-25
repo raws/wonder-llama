@@ -1,5 +1,8 @@
 module WonderLlama
   class Message
+    PRIVATE_TYPE = 'private'.freeze
+    STREAM_TYPE = 'stream'.freeze
+
     attr_reader :client, :params
 
     def initialize(client:, params:)
@@ -17,6 +20,14 @@ module WonderLlama
 
     def id
       self[:id]
+    end
+
+    def private?
+      type == PRIVATE_TYPE
+    end
+
+    def stream?
+      type == STREAM_TYPE
     end
 
     def to
