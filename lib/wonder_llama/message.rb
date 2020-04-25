@@ -1,6 +1,9 @@
 module WonderLlama
   class Message
-    def initialize(params)
+    attr_reader :client, :params
+
+    def initialize(client:, params:)
+      @client = client
       @params = params.transform_keys(&:to_sym)
     end
 

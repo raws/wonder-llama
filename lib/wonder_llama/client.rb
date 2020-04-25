@@ -36,7 +36,8 @@ module WonderLlama
       params = { content: content, to: to, topic: topic, type: type }
       response = post(path: '/api/v1/messages', params: params)
 
-      Message.new(content: content, id: response['id'], to: to, topic: topic, type: type)
+      message_params = { content: content, id: response['id'], to: to, topic: topic, type: type }
+      Message.new(client: self, params: message_params)
     end
 
     def stream_events(&block)

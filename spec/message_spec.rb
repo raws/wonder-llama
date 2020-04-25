@@ -1,6 +1,13 @@
 describe WonderLlama::Message do
-  let(:message) do
-    message_params = {
+  let(:client) do
+    WonderLlama::Client.new(api_key: 'test-api-key', email: 'test@example.com',
+      host: 'test.example.com')
+  end
+
+  let(:message) { described_class.new(client: client, params: params) }
+
+  let(:params) do
+    {
       'content' => 'Hello world!',
       'id' => 1,
       'to' => 'social',
@@ -8,13 +15,16 @@ describe WonderLlama::Message do
       'type' => 'stream',
       'foo' => 'bar'
     }
-
-    described_class.new(message_params)
   end
 
   describe '#[]' do
     subject { message[:foo] }
     it { is_expected.to eq('bar') }
+  end
+
+  describe '#client' do
+    subject { message.client }
+    it { is_expected.to eq(client) }
   end
 
   describe '#content' do
@@ -27,6 +37,11 @@ describe WonderLlama::Message do
     it { is_expected.to eq(1) }
   end
 
+  describe '#params' do
+    subject { message.params }
+    it { is_expected.to eq(params.transform_keys(&:to_sym)) }
+  end
+
   describe '#to' do
     subject { message.to }
     it { is_expected.to eq('social') }
@@ -36,13 +51,21 @@ describe WonderLlama::Message do
     subject { message.topic }
 
     context 'when the message params include a topic key' do
-      let(:message) { described_class.new('topic' => 'topic value') }
-      it { is_expected.to eq('topic value') }
+      before do
+        params.delete('subject')
+        params['topic'] = 'fun topic'
+      end
+
+      it { is_expected.to eq('fun topic') }
     end
 
     context 'when the message params include a subject key' do
-      let(:message) { described_class.new('subject' => 'subject value') }
-      it { is_expected.to eq('subject value') }
+      before do
+        params.delete('topic')
+        params['subject'] = 'fun subject'
+      end
+
+      it { is_expected.to eq('fun subject') }
     end
   end
 

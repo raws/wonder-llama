@@ -39,6 +39,7 @@ describe WonderLlama::MessageEvent do
     subject { event.message }
 
     it 'returns a message' do
+      expect(subject.client).to eq(client)
       expect(subject.content).to eq('Hello world!')
       expect(subject.id).to eq(2)
       expect(subject.to).to eq('social')

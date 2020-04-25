@@ -3,7 +3,7 @@ module WonderLlama
     TYPE = 'message'
 
     def message
-      @message ||= Message.new(self[:message])
+      @message ||= Message.new(client: client, params: self[:message])
     end
 
     def type
