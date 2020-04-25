@@ -1,5 +1,10 @@
 describe WonderLlama::HeartbeatEvent do
-  let(:event) { described_class.new('id' => 1) }
+  let(:client) do
+    WonderLlama::Client.new(api_key: 'test-api-key', email: 'test@example.com',
+      host: 'test.example.com')
+  end
+
+  let(:event) { described_class.new(client: client, params: { 'id' => 1 }) }
 
   describe 'TYPE' do
     subject { described_class::TYPE }

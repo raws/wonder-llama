@@ -1,19 +1,33 @@
 describe WonderLlama::MessageEvent do
-  let(:event) do
-    message_params = {
-      content: 'Hello world!',
-      id: 2,
-      to: 'social',
-      topic: 'greetings',
-      type: 'stream'
-    }
+  let(:client) do
+    WonderLlama::Client.new(api_key: 'test-api-key', email: 'test@example.com',
+      host: 'test.example.com')
+  end
 
-    described_class.new('id' => 1, 'message' => message_params)
+  let(:event) { described_class.new(client: client, params: params) }
+
+  let(:params) do
+    {
+      'id' => 1,
+      'message' => {
+        'content' => 'Hello world!',
+        'id' => 2,
+        'to' => 'social',
+        'topic' => 'greetings',
+        'type' => 'stream'
+      },
+      'type' => 'message'
+    }
   end
 
   describe 'TYPE' do
     subject { described_class::TYPE }
     it { is_expected.to eq('message') }
+  end
+
+  describe '#client' do
+    subject { event.client }
+    it { is_expected.to eq(client) }
   end
 
   describe '#id' do
@@ -31,6 +45,11 @@ describe WonderLlama::MessageEvent do
       expect(subject.topic).to eq('greetings')
       expect(subject.type).to eq('stream')
     end
+  end
+
+  describe '#params' do
+    subject { event.params }
+    it { is_expected.to eq(params.transform_keys(&:to_sym)) }
   end
 
   describe '#type' do

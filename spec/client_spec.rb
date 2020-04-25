@@ -71,9 +71,10 @@ describe WonderLlama::Client do
       end
 
       it 'returns an array of events' do
-        expect(subject).to include_event(WonderLlama::MessageEvent).with(id: 0)
-        expect(subject).to include_event(WonderLlama::HeartbeatEvent).with(id: 1)
-        expect(subject).to include_event(WonderLlama::Event).with(id: 2, type: 'unknown')
+        expect(subject).to include_event(WonderLlama::MessageEvent).with(id: 0, client: client)
+        expect(subject).to include_event(WonderLlama::HeartbeatEvent).with(id: 1, client: client)
+        expect(subject).to include_event(WonderLlama::Event).with(id: 2,
+          type: 'unknown', client: client)
       end
     end
 
@@ -247,11 +248,11 @@ describe WonderLlama::Client do
 
       first_event_queue_messages = [
         [
-          WonderLlama::HeartbeatEvent.new(id: 0),
-          WonderLlama::MessageEvent.new(id: 1, message: 'hi everyone')
+          WonderLlama::HeartbeatEvent.new(client: client, params: { id: 0 }),
+          WonderLlama::MessageEvent.new(client: client, params: { id: 1, message: 'hi everyone' })
         ], [
-          WonderLlama::HeartbeatEvent.new(id: 2),
-          WonderLlama::HeartbeatEvent.new(id: 3)
+          WonderLlama::HeartbeatEvent.new(client: client, params: { id: 2 }),
+          WonderLlama::HeartbeatEvent.new(client: client, params: { id: 3 })
         ]
       ]
 
@@ -266,7 +267,7 @@ describe WonderLlama::Client do
       second_event_queue = instance_double('WonderLlama::EventQueue', id: '1517975029:1')
 
       second_event_queue_messages = [
-        WonderLlama::MessageEvent.new(id: 0, message: 'hello, friend!'),
+        WonderLlama::MessageEvent.new(client: client, params: { id: 0, message: 'hello, friend!' }),
         :stop_streaming # Special token to break out of the event loop
       ]
 

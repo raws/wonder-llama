@@ -21,7 +21,7 @@ module WonderLlama
       response = get(path: '/api/v1/events', params: params, connection_options: connection_options)
 
       response['events'].map do |event_params|
-        Event.new_of_type_inferred_from(event_params)
+        Event.new_of_type_inferred_from(client: self, params: event_params)
       end
     end
 

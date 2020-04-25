@@ -14,16 +14,17 @@ describe WonderLlama::EventQueue do
   describe '#events' do
     let(:first_expected_events) do
       [
-        WonderLlama::HeartbeatEvent.new(id: 3),
-        WonderLlama::MessageEvent.new(id: 4, message: 'cool chat'),
-        WonderLlama::MessageEvent.new(id: 2, message: 'hello everyone!')
+        WonderLlama::HeartbeatEvent.new(client: client, params: { id: 3 }),
+        WonderLlama::MessageEvent.new(client: client, params: { id: 4, message: 'cool chat' }),
+        WonderLlama::MessageEvent.new(client: client, params: { id: 2, message: 'hello everyone!' })
       ]
     end
 
     let(:second_expected_events) do
       [
-        WonderLlama::HeartbeatEvent.new(id: 5),
-        WonderLlama::MessageEvent.new(id: 6, message: 'it is indeed the coolest')
+        WonderLlama::HeartbeatEvent.new(client: client, params: { id: 5 }),
+        WonderLlama::MessageEvent.new(client: client,
+          params: { id: 6, message: 'it is indeed the coolest' })
       ]
     end
 
@@ -39,15 +40,20 @@ describe WonderLlama::EventQueue do
 
       it 'returns arrays of events and keeps track of the last event' do
         latest_events = event_queue.events(**args)
-        expect(latest_events).to include_event(WonderLlama::MessageEvent).with(id: 2)
-        expect(latest_events).to include_event(WonderLlama::HeartbeatEvent).with(id: 3)
-        expect(latest_events).to include_event(WonderLlama::MessageEvent).with(id: 4)
+        expect(latest_events).to include_event(WonderLlama::MessageEvent).with(id: 2,
+          client: client)
+        expect(latest_events).to include_event(WonderLlama::HeartbeatEvent).with(id: 3,
+          client: client)
+        expect(latest_events).to include_event(WonderLlama::MessageEvent).with(id: 4,
+          client: client)
 
         expect(event_queue.last_event_id).to eq(4)
 
         latest_events = event_queue.events(**args)
-        expect(latest_events).to include_event(WonderLlama::HeartbeatEvent).with(id: 5)
-        expect(latest_events).to include_event(WonderLlama::MessageEvent).with(id: 6)
+        expect(latest_events).to include_event(WonderLlama::HeartbeatEvent).with(id: 5,
+          client: client)
+        expect(latest_events).to include_event(WonderLlama::MessageEvent).with(id: 6,
+          client: client)
       end
     end
 
