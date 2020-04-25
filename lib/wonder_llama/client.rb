@@ -32,8 +32,16 @@ module WonderLlama
         last_event_id: response['last_event_id'])
     end
 
-    def send_message(content:, to:, topic:, type:)
-      params = { content: content, to: to, topic: topic, type: type }
+    def send_message(content:, to:, topic: nil)
+      type = topic ? Message::STREAM_TYPE : Message::PRIVATE_TYPE
+
+      params = {
+        content: content,
+        to: to.is_a?(Array) ? JSON.generate(to) : to,
+        topic: topic,
+        type: type
+      }
+
       response = post(path: '/api/v1/messages', params: params)
 
       message_params = { content: content, id: response['id'], to: to, topic: topic, type: type }

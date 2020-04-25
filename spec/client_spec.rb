@@ -185,59 +185,104 @@ describe WonderLlama::Client do
   end
 
   describe '#send_message' do
-    subject do
-      client.send_message(content: 'Hello world!', to: 'greetings', topic: 'hello', type: 'stream')
+    context 'when sending a message to a stream' do
+      context 'with a stream ID'
+
+      context 'with a stream name' do
+        subject { client.send_message(content: 'Hello world!', to: 'greetings', topic: 'hello') }
+
+        context 'when the request succeeds' do
+          before do
+            response_body = {
+              id: 1,
+              msg: '',
+              result: 'success'
+            }
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello world!', to: 'greetings',
+                topic: 'hello', type: 'stream' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'returns a stream message' do
+            expect(subject).to be_stream
+            expect(subject.content).to eq('Hello world!')
+            expect(subject.id).to eq(1)
+            expect(subject.to).to eq('greetings')
+            expect(subject.topic).to eq('hello')
+          end
+        end
+
+        context 'when the Zulip server returns an error' do
+          before do
+            response_body = {
+              code: 'STREAM_DOES_NOT_EXIST',
+              msg: 'Stream \'greetings\' does not exist',
+              result: 'error',
+              stream: 'greetings'
+            }
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello world!', to: 'greetings', topic: 'hello', type: 'stream' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'raises ZulipError' do
+            expect { subject }.to raise_error(WonderLlama::ZulipError,
+              'Stream \'greetings\' does not exist')
+          end
+        end
+
+        context 'when the API credentials are invalid' do
+          before do
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              to_return(status: 401)
+          end
+
+          include_examples 'raises AuthorizationError'
+        end
+      end
     end
 
-    context 'when the request succeeds' do
-      before do
-        response_body = {
-          id: 1,
-          msg: '',
-          result: 'success'
-        }
+    context 'when sending a private message' do
+      context 'with a list of user IDs'
 
-        stub_request(:post, 'https://test.example.com/api/v1/messages').
-          with(body: { content: 'Hello world!', to: 'greetings', topic: 'hello', type: 'stream' }).
-          to_return(body: JSON.generate(response_body))
+      context 'with a list of email addresses' do
+        subject do
+          client.send_message(content: 'Hello, friend!',
+            to: ['friend1@example.com', 'friend2@example.com'])
+        end
+
+        context 'when the request succeeds' do
+          before do
+            response_body = {
+              id: 2,
+              msg: '',
+              result: 'success'
+            }
+
+            json_encoded_to = JSON.generate(['friend1@example.com', 'friend2@example.com'])
+
+            stub_request(:post, 'https://test.example.com/api/v1/messages').
+              with(body: { content: 'Hello, friend!', to: json_encoded_to,
+                topic: nil, type: 'private' }).
+              to_return(body: JSON.generate(response_body))
+          end
+
+          it 'returns a private message' do
+            expect(subject).to be_private
+            expect(subject.content).to eq('Hello, friend!')
+            expect(subject.id).to eq(2)
+            expect(subject.to).to match_array(['friend1@example.com', 'friend2@example.com'])
+            expect(subject.topic).to be_nil
+          end
+        end
+
+        context 'when the Zulip server returns an error'
+
+        context 'when the API credentials are invalid'
       end
-
-      it 'returns a message' do
-        expect(subject.content).to eq('Hello world!')
-        expect(subject.id).to eq(1)
-        expect(subject.to).to eq('greetings')
-        expect(subject.topic).to eq('hello')
-        expect(subject.type).to eq('stream')
-      end
-    end
-
-    context 'when the Zulip server returns an error' do
-      before do
-        response_body = {
-          code: 'STREAM_DOES_NOT_EXIST',
-          msg: 'Stream \'greetings\' does not exist',
-          result: 'error',
-          stream: 'greetings'
-        }
-
-        stub_request(:post, 'https://test.example.com/api/v1/messages').
-          with(body: { content: 'Hello world!', to: 'greetings', topic: 'hello', type: 'stream' }).
-          to_return(body: JSON.generate(response_body))
-      end
-
-      it 'raises ZulipError' do
-        expect { subject }.to raise_error(WonderLlama::ZulipError,
-          'Stream \'greetings\' does not exist')
-      end
-    end
-
-    context 'when the API credentials are invalid' do
-      before do
-        stub_request(:post, 'https://test.example.com/api/v1/messages').
-          to_return(status: 401)
-      end
-
-      include_examples 'raises AuthorizationError'
     end
   end
 
