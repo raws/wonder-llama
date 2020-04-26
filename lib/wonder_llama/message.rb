@@ -26,6 +26,10 @@ module WonderLlama
       type == PRIVATE_TYPE
     end
 
+    def reply(content)
+      client.send_message(content: content, to: to, topic: topic)
+    end
+
     def stream?
       type == STREAM_TYPE
     end

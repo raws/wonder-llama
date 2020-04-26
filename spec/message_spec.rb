@@ -68,6 +68,39 @@ describe WonderLlama::Message do
     end
   end
 
+  describe '#reply' do
+    context 'with a stream message' do
+      before do
+        allow(client).to receive(:send_message)
+
+        message.reply('hey there')
+      end
+
+      it 'replies to the stream' do
+        expect(client).to have_received(:send_message).
+          with(content: 'hey there', to: 'social', topic: 'greetings').once
+      end
+    end
+
+    context 'with a private message' do
+      before do
+        params['to'] = ['friend1@example.com', 'friend2@example.com']
+        params['type'] = described_class::PRIVATE_TYPE
+        params.delete('topic')
+
+        allow(client).to receive(:send_message)
+
+        message.reply('hey there')
+      end
+
+      it 'replies to the private message thread' do
+        expect(client).to have_received(:send_message).
+          with(content: 'hey there', to: ['friend1@example.com', 'friend2@example.com'],
+            topic: nil).once
+      end
+    end
+  end
+
   describe '#stream?' do
     subject { message.stream? }
 
