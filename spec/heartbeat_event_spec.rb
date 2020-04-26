@@ -11,6 +11,11 @@ describe WonderLlama::HeartbeatEvent do
     it { is_expected.to eq('heartbeat') }
   end
 
+  describe '#heartbeat?' do
+    subject { event.heartbeat? }
+    it { is_expected.to eq(true) }
+  end
+
   describe '#id' do
     subject { event.id }
     it { is_expected.to eq(1) }

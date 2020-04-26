@@ -11,6 +11,10 @@ module WonderLlama
       @params[key]
     end
 
+    def heartbeat?
+      false
+    end
+
     def id
       self[:id]
     end
