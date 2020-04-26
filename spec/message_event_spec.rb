@@ -48,6 +48,11 @@ describe WonderLlama::MessageEvent do
     end
   end
 
+  describe '#message?' do
+    subject { event.message? }
+    it { is_expected.to eq(true) }
+  end
+
   describe '#params' do
     subject { event.params }
     it { is_expected.to eq(params.transform_keys(&:to_sym)) }

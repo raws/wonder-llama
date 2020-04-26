@@ -15,6 +15,10 @@ module WonderLlama
       self[:id]
     end
 
+    def message?
+      false
+    end
+
     def self.new_of_type_inferred_from(client:, params:)
       klass = case params['type'].downcase
         when HeartbeatEvent::TYPE then HeartbeatEvent

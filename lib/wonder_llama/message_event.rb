@@ -6,6 +6,10 @@ module WonderLlama
       @message ||= Message.new(client: client, params: self[:message])
     end
 
+    def message?
+      true
+    end
+
     def type
       TYPE
     end

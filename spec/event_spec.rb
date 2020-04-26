@@ -34,6 +34,11 @@ describe WonderLlama::Event do
     it { is_expected.to eq(1) }
   end
 
+  describe '#message?' do
+    subject { event.message? }
+    it { is_expected.to eq(false) }
+  end
+
   describe '.new_of_type_inferred_from' do
     subject { described_class.new_of_type_inferred_from(client: client, params: params) }
 
