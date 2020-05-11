@@ -35,7 +35,7 @@ module WonderLlama
     end
 
     def to
-      self[:to]
+      self[:stream_id] || self[:to]
     end
 
     def topic

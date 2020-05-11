@@ -117,7 +117,24 @@ describe WonderLlama::Message do
 
   describe '#to' do
     subject { message.to }
-    it { is_expected.to eq('social') }
+
+    context 'when the message params include a stream ID' do
+      before do
+        params.delete('to')
+        params['stream_id'] = 75283
+      end
+
+      it { is_expected.to eq(75283) }
+    end
+
+    context 'when the message params include a stream name' do
+      before do
+        params.delete('stream_id')
+        params['to'] = 'social'
+      end
+
+      it { is_expected.to eq('social') }
+    end
   end
 
   describe '#topic' do
