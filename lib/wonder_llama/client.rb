@@ -13,19 +13,6 @@ module WonderLlama
       @base_url = "https://#{host}"
     end
 
-    def get_all_users(client_gravatar: false, include_custom_profile_fields: false)
-      params = {
-        client_gravatar: client_gravatar,
-        include_custom_profile_fields: include_custom_profile_fields
-      }
-
-      response = get(path: '/api/v1/users', params: params)
-
-      response['members'].map do |user_params|
-        User.new(client: self, params: user_params)
-      end
-    end
-
     def get_events_from_event_queue(blocking: true, last_event_id:, queue_id:)
       read_timeout = blocking ? BLOCKING_READ_TIMEOUT_SECONDS : NON_BLOCKING_READ_TIMEOUT_SECONDS
       connection_options = { read_timeout: read_timeout }
@@ -70,6 +57,19 @@ module WonderLlama
         rescue BadEventQueueIdError
           event_queue = register_event_queue
         end
+      end
+    end
+
+    def users(client_gravatar: false, include_custom_profile_fields: false)
+      params = {
+        client_gravatar: client_gravatar,
+        include_custom_profile_fields: include_custom_profile_fields
+      }
+
+      response = get(path: '/api/v1/users', params: params)
+
+      response['members'].map do |user_params|
+        User.new(client: self, params: user_params)
       end
     end
 

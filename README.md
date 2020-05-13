@@ -14,10 +14,6 @@ require 'wonder_llama'
 client = WonderLlama::Client.new(host: 'example.zulipchat.com',
   email: 'ralph@example.com', api_key: 's3cr3t')
 
-client.get_all_users.each do |user|
-  puts "#{user.id}: #{user.full_name} (#{user.email})"
-end
-
 client.send_message(type: 'stream', to: 'social', topic: 'greetings',
   content: 'hello world!')
 
@@ -29,6 +25,10 @@ client.stream_events do |event|
     message = event.message
     puts message.content
   end
+end
+
+client.users.each do |user|
+  puts "#{user.id}: #{user.full_name} (#{user.email})"
 end
 ```
 

@@ -17,7 +17,7 @@ class ListUsersExample
   private
 
   def users
-    @client.get_all_users.sort_by(&:id)
+    @client.users.sort_by(&:id)
   end
 end
 

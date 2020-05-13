@@ -41,118 +41,6 @@ describe WonderLlama::Client do
     it { is_expected.to eq('ralph@example.com') }
   end
 
-  describe '#get_all_users' do
-    subject { client.get_all_users(**options) }
-    let(:options) { Hash.new }
-
-    shared_examples 'returns an array of users' do
-      it 'returns an array of users' do
-        expected_human = WonderLlama::User.new(client: client, params: @human_params)
-        expected_bot = WonderLlama::User.new(client: client, params: @bot_params)
-        expected_users = [expected_human, expected_bot]
-
-        expect(subject).to match_array(expected_users)
-      end
-    end
-
-    context 'when the request succeeds' do
-      before do
-        @human_params = {
-          avatar_url: 'https://example.com/human.jpg',
-          bot_type: nil,
-          date_joined: Time.parse('2020-04-20T16:20:00-07:00').utc.iso8601,
-          email: 'human@example.com',
-          full_name: 'Human',
-          is_active: false,
-          is_admin: true,
-          is_bot: false,
-          is_guest: false,
-          timezone: 'America/Los_Angeles',
-          user_id: 1
-        }
-
-        @bot_params = {
-          avatar_url: 'https://example.com/bot.jpg',
-          bot_owner_id: 1,
-          bot_type: 1,
-          date_joined: Time.parse('2020-05-12T04:20:00-04:00').utc.iso8601,
-          email: 'bot@example.com',
-          full_name: 'Bot',
-          is_active: true,
-          is_admin: false,
-          is_bot: true,
-          is_guest: false,
-          timezone: 'America/New_York',
-          user_id: 2
-        }
-
-        @response_body = {
-          members: [@human_params, @bot_params],
-          msg: '',
-          result: 'success'
-        }
-      end
-
-      context 'with the default options' do
-        before do
-          stub_request(:get, 'https://test.example.com/api/v1/users').
-            with(query: { client_gravatar: false, include_custom_profile_fields: false }).
-            to_return(body: JSON.generate(@response_body))
-        end
-
-        include_examples 'returns an array of users'
-      end
-
-      context 'with the client_gravatar option' do
-        before do
-          options[:client_gravatar] = true
-          stub_request(:get, 'https://test.example.com/api/v1/users').
-            with(query: { client_gravatar: true, include_custom_profile_fields: false }).
-            to_return(body: JSON.generate(@response_body))
-        end
-
-        include_examples 'returns an array of users'
-      end
-
-      context 'with the include_custom_profile_fields option' do
-        before do
-          options[:include_custom_profile_fields] = true
-          stub_request(:get, 'https://test.example.com/api/v1/users').
-            with(query: { client_gravatar: false, include_custom_profile_fields: true }).
-            to_return(body: JSON.generate(@response_body))
-        end
-
-        include_examples 'returns an array of users'
-      end
-    end
-
-    context 'when the Zulip server returns an unrecognized error' do
-      before do
-        response_body = {
-          code: 'OH_NO',
-          msg: 'Something terrible has happened',
-          result: 'error'
-        }
-
-        stub_request(:get, 'https://test.example.com/api/v1/users').
-          with(query: { client_gravatar: false, include_custom_profile_fields: false }).
-          to_return(body: JSON.generate(response_body))
-      end
-
-      include_examples 'raises ZulipError', 'Something terrible has happened'
-    end
-
-    context 'when the API credentials are invalid' do
-      before do
-        stub_request(:get, 'https://test.example.com/api/v1/users').
-          with(query: { client_gravatar: false, include_custom_profile_fields: false }).
-          to_return(status: 401)
-      end
-
-      include_examples 'raises AuthorizationError'
-    end
-  end
-
   describe '#get_events_from_event_queue' do
     subject { client.get_events_from_event_queue(last_event_id: -1, queue_id: '1517975029:0') }
 
@@ -585,6 +473,118 @@ describe WonderLlama::Client do
       end
 
       expect(actual_messages).to eq(@expected_messages)
+    end
+  end
+
+  describe '#users' do
+    subject { client.users(**options) }
+    let(:options) { Hash.new }
+
+    shared_examples 'returns an array of users' do
+      it 'returns an array of users' do
+        expected_human = WonderLlama::User.new(client: client, params: @human_params)
+        expected_bot = WonderLlama::User.new(client: client, params: @bot_params)
+        expected_users = [expected_human, expected_bot]
+
+        expect(subject).to match_array(expected_users)
+      end
+    end
+
+    context 'when the request succeeds' do
+      before do
+        @human_params = {
+          avatar_url: 'https://example.com/human.jpg',
+          bot_type: nil,
+          date_joined: Time.parse('2020-04-20T16:20:00-07:00').utc.iso8601,
+          email: 'human@example.com',
+          full_name: 'Human',
+          is_active: false,
+          is_admin: true,
+          is_bot: false,
+          is_guest: false,
+          timezone: 'America/Los_Angeles',
+          user_id: 1
+        }
+
+        @bot_params = {
+          avatar_url: 'https://example.com/bot.jpg',
+          bot_owner_id: 1,
+          bot_type: 1,
+          date_joined: Time.parse('2020-05-12T04:20:00-04:00').utc.iso8601,
+          email: 'bot@example.com',
+          full_name: 'Bot',
+          is_active: true,
+          is_admin: false,
+          is_bot: true,
+          is_guest: false,
+          timezone: 'America/New_York',
+          user_id: 2
+        }
+
+        @response_body = {
+          members: [@human_params, @bot_params],
+          msg: '',
+          result: 'success'
+        }
+      end
+
+      context 'with the default options' do
+        before do
+          stub_request(:get, 'https://test.example.com/api/v1/users').
+            with(query: { client_gravatar: false, include_custom_profile_fields: false }).
+            to_return(body: JSON.generate(@response_body))
+        end
+
+        include_examples 'returns an array of users'
+      end
+
+      context 'with the client_gravatar option' do
+        before do
+          options[:client_gravatar] = true
+          stub_request(:get, 'https://test.example.com/api/v1/users').
+            with(query: { client_gravatar: true, include_custom_profile_fields: false }).
+            to_return(body: JSON.generate(@response_body))
+        end
+
+        include_examples 'returns an array of users'
+      end
+
+      context 'with the include_custom_profile_fields option' do
+        before do
+          options[:include_custom_profile_fields] = true
+          stub_request(:get, 'https://test.example.com/api/v1/users').
+            with(query: { client_gravatar: false, include_custom_profile_fields: true }).
+            to_return(body: JSON.generate(@response_body))
+        end
+
+        include_examples 'returns an array of users'
+      end
+    end
+
+    context 'when the Zulip server returns an unrecognized error' do
+      before do
+        response_body = {
+          code: 'OH_NO',
+          msg: 'Something terrible has happened',
+          result: 'error'
+        }
+
+        stub_request(:get, 'https://test.example.com/api/v1/users').
+          with(query: { client_gravatar: false, include_custom_profile_fields: false }).
+          to_return(body: JSON.generate(response_body))
+      end
+
+      include_examples 'raises ZulipError', 'Something terrible has happened'
+    end
+
+    context 'when the API credentials are invalid' do
+      before do
+        stub_request(:get, 'https://test.example.com/api/v1/users').
+          with(query: { client_gravatar: false, include_custom_profile_fields: false }).
+          to_return(status: 401)
+      end
+
+      include_examples 'raises AuthorizationError'
     end
   end
 end
