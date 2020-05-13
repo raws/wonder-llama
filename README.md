@@ -2,7 +2,7 @@
 
 Wonder Llama is a [Zulip](https://zulipchat.com) API client for Ruby. It's simple to use, depends only on Ruby's standard library, and is well-tested.
 
-It's called Wonder Llama because [LevelUp](https://www.thelevelup.com)'s Zulip bot, for which this library was built, is named Ralph.
+It's called Wonder Llama because [LevelUp](https://www.thelevelup.com)'s Zulip bot, for which this library was built, [is named Ralph](https://www.youtube.com/watch?v=79TVMn_d_Pk).
 
 ## Usage
 
