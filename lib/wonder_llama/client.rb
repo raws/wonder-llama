@@ -73,6 +73,17 @@ module WonderLlama
       end
     end
 
+    def user_presence(user_id)
+      response = get(path: "/api/v1/users/#{user_id}/presence")
+
+      response['presence'].each_with_object({}) do |(client, details), hash|
+        hash[client.to_sym] = {
+          status: details['status'].to_sym,
+          timestamp: Time.at(details['timestamp'])
+        }
+      end
+    end
+
     private
 
     def get(path:, params: nil, connection_options: {})
